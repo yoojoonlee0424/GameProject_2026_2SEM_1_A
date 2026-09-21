@@ -4,6 +4,12 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 
+public enum PlayerState
+{
+    Normal,
+    
+    Pickup,
+}
 
 public class PlayerContoller : MonoBehaviour
 {
@@ -20,6 +26,7 @@ public class PlayerContoller : MonoBehaviour
     private CharacterController controller;
     private float verticalVeolocity;
 
+    private PlayerState currentState = PlayerState.Normal;
 
     private void Awake()
     {
@@ -44,6 +51,22 @@ public class PlayerContoller : MonoBehaviour
             return;
         }
 
+        //중력은 상태와 무관하게 상시 적용
+        ApplyGravity();
+
+        //normal 상태가 아니면 이동 입력X
+        if (currentState != PlayerState.Normal)
+        {
+            return;
+        }
+
+        HandleMovement(keyboard);
+
+    }
+
+
+    private void HandleMovement(Keyboard keyboard)
+    {
         Vector2 input = Vector2.zero;
 
         if (keyboard.aKey.isPressed)
@@ -80,14 +103,29 @@ public class PlayerContoller : MonoBehaviour
         controller.Move(moveDirection * currentSpeed * Time.deltaTime);
 
         //이동 방향으로 회전
-        if(moveDirection.sqrMagnitude > 0.001f)
+        if (moveDirection.sqrMagnitude > 0.001f)
         {
             Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
         }
 
+        // 애니메이션 설정
+
+        float animationSpeed = 0f;
+
+        if (moveDirection.sqrMagnitude > 0.001f)
+        {
+            animationSpeed = isRunning ? 1f : 0.5f;
+        }
+
+        animator.SetFloat("speed", animationSpeed, 0.1f, Time.deltaTime);
+    }
+
+
+    private void ApplyGravity()
+    {
         //기본 중력
-        if(controller.isGrounded && verticalVeolocity < 0f)
+        if (controller.isGrounded && verticalVeolocity < 0f)
         {
             verticalVeolocity = -2f;
         }
@@ -97,16 +135,19 @@ public class PlayerContoller : MonoBehaviour
         }
 
         controller.Move(Vector3.up * verticalVeolocity * Time.deltaTime);
+    }
 
-        // 애니메이션 설정
+    public void ChangeState(PlayerState newState)
+    {
+        currentState = newState;
 
-        float animationSpeed = 0f;
-
-        if(moveDirection.sqrMagnitude > 0.001f)
+        if(currentState != PlayerState.Normal)
         {
-            animationSpeed = isRunning ? 1f : 0.5f;
+            animator.SetFloat("speed", 0);
         }
 
-        animator.SetFloat("speed", animationSpeed, 0.1f, Time.deltaTime);
+        Debug.LogError(currentState);
     }
+
+
 }
