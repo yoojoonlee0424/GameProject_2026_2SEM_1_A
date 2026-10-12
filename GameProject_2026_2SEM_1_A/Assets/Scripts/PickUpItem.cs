@@ -35,4 +35,9 @@ public class PickUpItem : MonoBehaviour
         Debug.LogWarning(itemName + " " + amount);
         Destroy(gameObject);
     }
+
+    public string GetItemName()
+    {
+        return itemName;
+    }
 }
