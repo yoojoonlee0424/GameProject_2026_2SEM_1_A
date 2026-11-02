@@ -9,6 +9,8 @@ public enum PlayerState
     Normal,
     
     Pickup,
+
+    inventory
 }
 
 public class PlayerContoller : MonoBehaviour
@@ -149,5 +151,9 @@ public class PlayerContoller : MonoBehaviour
         Debug.LogError(currentState);
     }
 
+    public bool IsNormalState()
+    {
+        return currentState == PlayerState.Normal;
+    }
 
 }
